@@ -93,3 +93,4 @@ ENV/
 
 # training data folder
 data/
+save/
