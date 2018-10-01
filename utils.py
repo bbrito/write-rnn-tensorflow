@@ -201,7 +201,7 @@ class DataLoader():
             seq_length=300,
             scale_factor=10,
             limit=500):
-        self.data_dir = "./data"
+        self.data_dir = "data"
         self.batch_size = batch_size
         self.seq_length = seq_length
         self.scale_factor = scale_factor  # divide data by this factor
@@ -222,12 +222,13 @@ class DataLoader():
 
         # build the list of xml files
         filelist = []
+        print('Found directory: %s' % data_dir)
         # Set the directory you want to start from
         rootDir = data_dir
         for dirName, subdirList, fileList in os.walk(rootDir):
-            #print('Found directory: %s' % dirName)
+            print('Found directory: %s' % dirName)
             for fname in fileList:
-                #print('\t%s' % fname)
+                print('\t%s' % fname)
                 filelist.append(dirName + "/" + fname)
 
         # function to read each individual xml file

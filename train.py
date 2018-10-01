@@ -11,9 +11,9 @@ from utils import DataLoader
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--rnn_size', type=int, default=256,
+    parser.add_argument('--rnn_size', type=int, default=300,
                         help='size of RNN hidden state')
-    parser.add_argument('--num_layers', type=int, default=2,
+    parser.add_argument('--num_layers', type=int, default=3,
                         help='number of layers in the RNN')
     parser.add_argument('--model', type=str, default='lstm',
                         help='rnn, gru, or lstm')
@@ -21,15 +21,15 @@ def main():
                         help='minibatch size')
     parser.add_argument('--seq_length', type=int, default=300,
                         help='RNN sequence length')
-    parser.add_argument('--num_epochs', type=int, default=30,
+    parser.add_argument('--num_epochs', type=int, default=50,
                         help='number of epochs')
     parser.add_argument('--save_every', type=int, default=500,
                         help='save frequency')
     parser.add_argument('--model_dir', type=str, default='save',
                         help='directory to save model to')
-    parser.add_argument('--grad_clip', type=float, default=10.,
+    parser.add_argument('--grad_clip', type=float, default=1.,
                         help='clip gradients at this value')
-    parser.add_argument('--learning_rate', type=float, default=0.005,
+    parser.add_argument('--learning_rate', type=float, default=0.001,
                         help='learning rate')
     parser.add_argument('--decay_rate', type=float, default=0.95,
                         help='decay rate for rmsprop')
@@ -79,7 +79,7 @@ def train(args):
                     model.target_data: y,
                     model.state_in: state}
                 train_loss_summary, train_loss, state, _ = sess.run(
-                    [model.train_loss_summary, model.cost, model.state_out, model.train_op], feed)
+                    [model.train_loss_summary, model.cost, model.state_out, model.update], feed)
                 summary_writer.add_summary(train_loss_summary, ith_train_step)
 
                 valid_loss_summary, valid_loss, = sess.run(

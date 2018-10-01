@@ -21,7 +21,7 @@ class Model():
             raise Exception("model type not supported: {}".format(args.model))
 
         def get_cell():
-            return cell_fn(args.rnn_size, state_is_tuple=False)
+                return cell_fn(args.rnn_size, state_is_tuple=True)
 
         cell = tf.contrib.rnn.MultiRNNCell(
             [get_cell() for _ in range(args.num_layers)])
@@ -108,7 +108,7 @@ class Model():
             # implementing eq # 26 of http://arxiv.org/abs/1308.0850
             epsilon = 1e-20
             result1 = tf.multiply(result0, z_pi)
-            result1 = tf.reduce_sum(result1, 1, keep_dims=True)
+            result1 = tf.reduce_sum(result1, 1, keepdims=True)
             # at the beginning, some errors are exactly zero.
             result1 = -tf.log(tf.maximum(result1, 1e-20))
 
@@ -134,12 +134,12 @@ class Model():
             z_eos = tf.sigmoid(z_eos)  # should be negated, but doesn't matter.
 
             # softmax all the pi's:
-            max_pi = tf.reduce_max(z_pi, 1, keep_dims=True)
+            max_pi = tf.reduce_max(z_pi, 1, keepdims=True)
             z_pi = tf.subtract(z_pi, max_pi)
             z_pi = tf.exp(z_pi)
             normalize_pi = tf.reciprocal(
-                tf.reduce_sum(z_pi, 1, keep_dims=True))
-            z_pi = tf.multiply(normalize_pi, z_pi)
+                tf.reduce_sum(z_pi, 1, keepdims=True))
+            z_pi = tf.nn.softmax(tf.clip_by_value(z_pi,1e-8,1.))
 
             # exponentiate the sigmas and also make corr between -1 and 1.
             z_sigma1 = tf.exp(z_sigma1)
@@ -198,12 +198,14 @@ class Model():
         self.valid_loss_summary = tf.summary.scalar(
             'validation_loss', self.cost)
 
-        self.lr = tf.Variable(0.0, trainable=False)
+        self.lr = tf.Variable(0.0, trainable=True)
         tvars = tf.trainable_variables()
         grads, _ = tf.clip_by_global_norm(
             tf.gradients(self.cost, tvars), args.grad_clip)
-        optimizer = tf.train.AdamOptimizer(self.lr)
-        self.train_op = optimizer.apply_gradients(zip(grads, tvars))
+
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+
+        self.update = self.optimizer.minimize(tf.reduce_mean(lossfunc))
 
     def sample(self, sess, num=1200):
 
